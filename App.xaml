@@ -1,0 +1,14 @@
+﻿<Application x:Class="TODO_App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:TODO_App"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <FontFamily x:Key="FontAwesome">/TODO-App;component/Fonts/FontAwesome.otf#Font Awesome 6 Free Solid</FontFamily>
+
+        <FontFamily x:Key="Inter-Regular">/TODO-App;component/Fonts/Inter-Regular.ttf#Inter</FontFamily>
+        <FontFamily x:Key="Inter-Medium">/TODO-App;component/Fonts/Inter-Medium.ttf#Inter Medium</FontFamily>
+        <FontFamily x:Key="Inter-SemiBold">/TODO-App;component/Fonts/Inter-SemiBold.ttf#Inter SemiBold</FontFamily>
+        
+    </Application.Resources>
+</Application>
