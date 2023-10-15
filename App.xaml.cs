@@ -13,5 +13,6 @@ namespace TODO_App
     /// </summary>
     public partial class App : Application
     {
+        public String ActiveProfile { get; set; }
     }
 }
