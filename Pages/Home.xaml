@@ -8,6 +8,25 @@
       Width="1920" Height="1080"
       Title="Home">
 
+    <Page.Resources>
+        <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontFamily" Value="{StaticResource FontAwesome}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="3 0"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Cursor" Value="Hand"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="False">
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
     <Grid Background="White" Focusable="True" Name="MainGrid">
         <TextBlock Foreground="#0C8CE9" FontFamily="{StaticResource Inter-SemiBold}"
                    FontSize="72" HorizontalAlignment="Center" VerticalAlignment="Top"
@@ -37,33 +56,24 @@
                         <Setter Property="Foreground" Value="White"/>
                         <Setter Property="FontSize" Value="20"/>
                         <Setter Property="HorizontalAlignment" Value="Center"/>
-                        <Setter Property="CaretBrush" Value="#0C8CE9"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="CaretBrush" Value="White"/>
+                        <Setter Property="Focusable" Value="True"/>
                     </Style>
 
                     <Style TargetType="{x:Type TextBlock}">
-                        <Setter Property="FontSize" Value="18"/>
-                        <Setter Property="FontFamily" Value="{StaticResource FontAwesome}"/>
+                        <Setter Property="FontSize" Value="20"/>
+                        <Setter Property="FontFamily" Value="{StaticResource Inter-Medium}"/>
                         <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="Margin" Value="3 0"/>
-                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
                         <Setter Property="VerticalAlignment" Value="Center"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Cursor" Value="Hand"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="False">
-                                <Setter Property="Cursor" Value="Arrow"/>
-                            </Trigger>
-                        </Style.Triggers>
                     </Style>
                 </StackPanel.Resources>
 
                 <Border Background="White" BorderBrush="#0C8CE9" BorderThickness="2">
-                    <TextBlock Foreground="#0C8CE9" FontFamily="{StaticResource Inter-Medium}"
-                               FontSize="20" HorizontalAlignment="Center">New Profile</TextBlock>
+                    <TextBlock Foreground="#0C8CE9">New Profile</TextBlock>
                 </Border>
             </StackPanel>
         </ScrollViewer>
