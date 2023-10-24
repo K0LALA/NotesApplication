@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 /**
  * Pen : f304
@@ -26,6 +27,8 @@ namespace TODO_App.Pages
         private bool isEditingName = false;
         // Used to stop event propogation from the profileNameState to the profile MouseLeftButtonDown
         private bool click = false;
+        // Used to keep track of the old text in a TextBox
+        string previousText = "";
 
         // Directory for application's data, all files are json files containing different profiles
         private Uri dataApplicationPath = new Uri(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).ToString() + "\\NotesApplication\\", UriKind.Relative);
@@ -51,6 +54,23 @@ namespace TODO_App.Pages
             click = true;
             await Task.Delay(100);
             click = false;
+        }
+
+        /// <summary>
+        /// Returns if a name already exists in the application directory
+        /// </summary>
+        /// <param name="name">The name of the file to check (without .json at the end)</param>
+        /// <returns>true if the name already exists, false if it doesn't</returns>
+        private bool NameAlreadyExists(string name, string previous = "")
+        {
+            foreach (string file in Directory.GetFiles(dataApplicationPath.ToString(), "*.json"))
+            {
+                string fileName = file.Replace(dataApplicationPath.ToString(), "").Replace(".json", "");
+                if (Equals(name, fileName) && !Equals(fileName, previous))
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -114,49 +134,22 @@ namespace TODO_App.Pages
         }
 
         /// <summary>
-        /// Event for each profile's border, triggered when mouse entered
+        /// Update the names inside the profilesStackPanel after removing one of the children
         /// </summary>
-        /// <param name="sender">The border the mouse is on</param>
-        /// <param name="e">Arguments for the event</param>
-        private void ProfileMouseEnter(object sender, MouseEventArgs e)
+        /// <param name="childNumber">The index of the removed child</param>
+        private void UpdateNames(int childNumber)
         {
-            if(!isEditingName)
+            // Get the list of children
+            UIElementCollection list = profilesStackPanel.Children;
+            // For each element (except the last one) from the removed child's index
+            for (int i = childNumber; i < list.Count - 1; i++)
             {
-                Cursor = Cursors.Hand;
-                // If the Control key is pressed
-                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
-                {
-                    // Make the profile red
-                    Border border = sender as Border;
-                    border.Background = bc.ConvertFromString("#E55934") as Brush;
-                }
-                else
-                {
-                    TextBlock profileNameState = ((sender as Border).Child as Grid).Children[2] as TextBlock;
-                    profileNameState.Opacity = 1.0;
-                }
-            }
-            else
-                Cursor = Cursors.Arrow;
-        }
-
-        /// <summary>
-        /// Event for each profile's border, triggered when mouse leaved
-        /// </summary>
-        /// <param name="sender">The border the mouse was on</param>
-        /// <param name="e">Arguments for the event</param>
-        private void ProfileMouseLeave(object sender, MouseEventArgs e)
-        {
-            Cursor = Cursors.Arrow;
-            if(!isEditingName)
-            {
-                // Make the profile blue if it was red
-                Border border = sender as Border;
-                if (border.Background != bc.ConvertFromString("#0C8CE9") as Brush)
-                    border.Background = bc.ConvertFromString("#0C8CE9") as Brush;
-
-                TextBlock profileNameState = (border.Child as Grid).Children[2] as TextBlock;
-                profileNameState.Opacity = 0.0;
+                // Rename the children
+                int index = list.IndexOf(list[i]);
+                string name = "p" + index.ToString();
+                (list[i] as Border).Name = name;
+                RegisterName(name, list[i]);
+                UnregisterName("p" + (index + 1).ToString());
             }
         }
 
@@ -178,8 +171,25 @@ namespace TODO_App.Pages
         {
             Grid grid = (sender as TextBlock).Parent as Grid;
             TextBlock textBlock = sender as TextBlock;
+            ClickEnabled();
 
-            if (textBlock.Text.Equals("\uf00c"))
+            if(!isEditingName)
+            {
+                isEditingName = true;
+                textBlock.Text = "\uf00c";
+                // DIsable the TextBlock and enable the TextBox
+                grid.Children[0].Opacity = 0.0;
+                grid.Children[0].IsEnabled = false;
+                previousText = (grid.Children[0] as TextBlock).Text;
+                grid.Children[1].Opacity = 1.0;
+                grid.Children[1].IsEnabled = true;
+                // Disable all the borders
+                BordersEnabled(false);
+                // Except the current one
+                (grid.Parent as Border).IsEnabled = true;
+            }
+
+            else if (textBlock.Text.Equals("\uf00c"))
             {
                 ClickEnabled();
                 isEditingName = false;
@@ -205,18 +215,75 @@ namespace TODO_App.Pages
                 return;
             }
 
-            ClickEnabled();
-            isEditingName = true;
-            textBlock.Text = "\uf00c";
-            // DIsable the TextBlock and enable the TextBox
-            grid.Children[0].Opacity = 0.0;
-            grid.Children[0].IsEnabled = false;
-            grid.Children[1].Opacity = 1.0;
-            grid.Children[1].IsEnabled = true;
-            // Disable all the borders
-            BordersEnabled(false);
-            // Except the current one
-            (grid.Parent as Border).IsEnabled = true;
+            
+        }
+
+        /// <summary>
+        /// Event for each profile's border, triggered when mouse entered
+        /// </summary>
+        /// <param name="sender">The border the mouse is on</param>
+        /// <param name="e">Arguments for the event</param>
+        private void ProfileMouseEnter(object sender, MouseEventArgs e)
+        {
+            if(!isEditingName)
+            {
+                Cursor = Cursors.Hand;
+                // If the Control key is pressed
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                {
+                    // Make the profile red
+                    (sender as Border).Background = bc.ConvertFromString("#E55934") as Brush;
+                }
+                else
+                {
+                    TextBlock profileNameState = ((sender as Border).Child as Grid).Children[2] as TextBlock;
+                    DoubleAnimation opacityAnimation = new DoubleAnimation();
+                    opacityAnimation.From = 0D;
+                    opacityAnimation.To = 1D;
+                    opacityAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(150));
+
+                    Storyboard.SetTarget(opacityAnimation, profileNameState);
+                    Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(Canvas.OpacityProperty));
+
+                    Storyboard opacityStoryboard = new Storyboard();
+                    opacityStoryboard.Children.Add(opacityAnimation);
+
+                    opacityStoryboard.Begin(profileNameState);
+                }
+            }
+            else
+                Cursor = Cursors.Arrow;
+        }
+
+        /// <summary>
+        /// Event for each profile's border, triggered when mouse leaved
+        /// </summary>
+        /// <param name="sender">The border the mouse was on</param>
+        /// <param name="e">Arguments for the event</param>
+        private void ProfileMouseLeave(object sender, MouseEventArgs e)
+        {
+            Cursor = Cursors.Arrow;
+            if(!isEditingName)
+            {
+                // Make the profile blue if it was red
+                Border border = sender as Border;
+                if (border.Background != bc.ConvertFromString("#0C8CE9") as Brush)
+                    border.Background = bc.ConvertFromString("#0C8CE9") as Brush;
+
+                TextBlock profileNameState = (border.Child as Grid).Children[2] as TextBlock;
+                DoubleAnimation opacityAnimation = new DoubleAnimation();
+                opacityAnimation.From = 1D;
+                opacityAnimation.To = 0D;
+                opacityAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(150));
+
+                Storyboard.SetTarget(opacityAnimation, profileNameState);
+                Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(Canvas.OpacityProperty));
+
+                Storyboard opacityStoryboard = new Storyboard();
+                opacityStoryboard.Children.Add(opacityAnimation);
+
+                opacityStoryboard.Begin(profileNameState);
+            }
         }
 
         /// <summary>
@@ -248,23 +315,6 @@ namespace TODO_App.Pages
         }
 
         /// <summary>
-        /// Returns if a name already exists in the application directory
-        /// </summary>
-        /// <param name="name">The name of the file to check (without .json at the end)</param>
-        /// <returns>true if the name already exists, false if it doesn't</returns>
-        private bool NameAlreadyExists(string name)
-        {
-            foreach (string file in Directory.GetFiles(dataApplicationPath.ToString(), "*.json"))
-            {
-                string fileName = file.Replace(dataApplicationPath.ToString(), "").Replace(".json", "");
-                if (Equals(name, fileName))
-                    return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Raised when the text of TextBox of a profile changed
         /// </summary>
         /// <param name="sender">The TextBox that raised the event</param>
@@ -277,7 +327,7 @@ namespace TODO_App.Pages
             string newText = textBox.Text;
 
             // If the name already exists or is empty, make the border red and remove the check for a warning
-            if (NameAlreadyExists(newText) || newText.Length == 0)
+            if (NameAlreadyExists(newText, previousText) || newText.Length == 0)
             {
                 parent.Background = bc.ConvertFromString("#E55934") as Brush;
                 (grid.Children[2] as TextBlock).Text = "!";
@@ -298,26 +348,6 @@ namespace TODO_App.Pages
         private void ProfileNameState(object sender, MouseEventArgs e)
         {
             UpdateState(sender);
-        }
-
-        /// <summary>
-        /// Update the names inside the profilesStackPanel after removing one of the children
-        /// </summary>
-        /// <param name="childNumber">The index of the removed child</param>
-        private void UpdateNames(int childNumber)
-        {
-            // Get the list of children
-            UIElementCollection list = profilesStackPanel.Children;
-            // For each element (except the last one) from the removed child's index
-            for (int i = childNumber; i < list.Count-1;i++)
-            {
-                // Rename the children
-                int index = list.IndexOf(list[i]);
-                string name = "p" + index.ToString();
-                (list[i] as Border).Name = name;
-                RegisterName(name, list[i]);
-                UnregisterName("p" + (index + 1).ToString());
-            }
         }
 
         /// <summary>

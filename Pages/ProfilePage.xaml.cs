@@ -451,12 +451,12 @@ namespace TODO_App.Pages
 
             Storyboard tabDeletedStoryboard = new Storyboard();
             tabDeletedStoryboard.Children.Add(tabDeletedAnimation);
-            tabDeletedStoryboard.Completed += new EventHandler(delegate (Object o, EventArgs a)
+            tabDeletedStoryboard.Completed += new EventHandler(delegate (object o, EventArgs a)
             {
                 int childNumber = int.Parse(tab.Name.Substring(1));
                 tabs.Children.RemoveAt(childNumber);
-                this.UnregisterName(tab.Name);
-                this.UnregisterName(tab.Name + "icon");
+                UnregisterName(tab.Name);
+                UnregisterName(tab.Name + "icon");
             });
             tabDeletedStoryboard.Begin(tab);
         }
