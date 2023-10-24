@@ -9,6 +9,16 @@
       Title="Home">
 
     <Page.Resources>
+        <Style x:Key="NoFocusStyle" TargetType="{x:Type Control}">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
         <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontFamily" Value="{StaticResource FontAwesome}"/>
@@ -33,10 +43,17 @@
                    Margin="0 150">Choose a profile</TextBlock>
 
         <ScrollViewer Width="500" Height="750" Margin="275" VerticalScrollBarVisibility="Hidden"
-                      HorizontalAlignment="Center" VerticalAlignment="Top">
-            <StackPanel Orientation="Vertical" Name="ProfilesStackPanel">
+                      HorizontalAlignment="Center" VerticalAlignment="Top" FocusVisualStyle="{StaticResource NoFocusStyle}">
+            <StackPanel Orientation="Vertical" Name="ProfilesStackPanel" FocusVisualStyle="{StaticResource NoFocusStyle}">
                 <StackPanel.Resources>
                     <Style TargetType="{x:Type Border}">
+                        <Setter Property="Margin" Value="5"/>
+                        <Setter Property="CornerRadius" Value="3"/>
+                        <Setter Property="Background" Value="#0C8CE9"/>
+                        <Setter Property="Padding" Value="5"/>
+                    </Style>
+
+                    <Style x:Key="NewProfile" TargetType="{x:Type Border}">
                         <Setter Property="Margin" Value="5"/>
                         <Setter Property="CornerRadius" Value="3"/>
                         <Setter Property="Background" Value="#0C8CE9"/>
@@ -72,7 +89,8 @@
                     </Style>
                 </StackPanel.Resources>
 
-                <Border Background="White" BorderBrush="#0C8CE9" BorderThickness="2">
+                <Border Background="White" BorderBrush="#0C8CE9" BorderThickness="2"
+                        MouseLeftButtonDown="NewProfile" Style="{StaticResource NewProfile}">
                     <TextBlock Foreground="#0C8CE9">New Profile</TextBlock>
                 </Border>
             </StackPanel>
